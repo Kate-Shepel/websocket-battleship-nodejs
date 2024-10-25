@@ -1,13 +1,40 @@
-import { IActionCommand } from '../types/types.js';
+import { WebSocket } from 'ws';
 
-export const gameCommandHandler = <T>(data: IActionCommand<T>) => {
+import { IActionCommand, IRegisterUser } from '../types/types.js';
+
+export const gameCommandHandler = <T>(
+  data: IActionCommand<T>,
+  gameUsers: Array<{ name: string; password: string }>,
+  ws: WebSocket,
+) => {
   console.log('Data in gameCommandHandler', data);
   const commandAction = data.type;
 
   switch (commandAction) {
-    case 'reg':
-      console.log('Register player');
+    case 'reg': {
+      const { name, password } = data.data as IRegisterUser;
+      const existingUser = gameUsers.find((user) => user.name === name);
+
+      if (existingUser) {
+        ws.send(
+          JSON.stringify({
+            type: 'reg',
+            data: { name, error: true, errorText: 'User already exists' },
+            id: 0,
+          }),
+        );
+      } else {
+        gameUsers.push({ name, password });
+        ws.send(
+          JSON.stringify({
+            type: 'reg',
+            data: { name, index: gameUsers.length - 1, error: false, errorText: '' },
+            id: 0,
+          }),
+        );
+      }
       break;
+    }
 
     case 'create_room':
       console.log('Create new room');

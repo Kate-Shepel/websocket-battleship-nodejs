@@ -1,10 +1,27 @@
-export const gameCommandHandler = (data) => {
+export const gameCommandHandler = (data, gameUsers, ws) => {
     console.log('Data in gameCommandHandler', data);
     const commandAction = data.type;
     switch (commandAction) {
-        case 'reg':
-            console.log('Register player');
+        case 'reg': {
+            const { name, password } = data.data;
+            const existingUser = gameUsers.find((user) => user.name === name);
+            if (existingUser) {
+                ws.send(JSON.stringify({
+                    type: 'reg',
+                    data: { name, error: true, errorText: 'User already exists' },
+                    id: 0,
+                }));
+            }
+            else {
+                gameUsers.push({ name, password });
+                ws.send(JSON.stringify({
+                    type: 'reg',
+                    data: { name, index: gameUsers.length - 1, error: false, errorText: '' },
+                    id: 0,
+                }));
+            }
             break;
+        }
         case 'create_room':
             console.log('Create new room');
             break;

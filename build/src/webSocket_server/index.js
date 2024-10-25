@@ -4,6 +4,7 @@ import { decodeCommand } from '../utils/commandHandler.js';
 const WSSERVER_PORT = 3000;
 const wsServer = new WebSocketServer({ port: WSSERVER_PORT });
 const serverClients = [];
+const gameUsers = [];
 console.log(`Start WebSocket server on port ${WSSERVER_PORT}`);
 wsServer.on('connection', (ws) => {
     console.log('Client connected');
@@ -12,7 +13,7 @@ wsServer.on('connection', (ws) => {
         try {
             const decodedCommand = decodeCommand(command.toString());
             console.log(`Game Command: ${JSON.stringify(decodedCommand)}`);
-            gameCommandHandler(decodedCommand);
+            gameCommandHandler(decodedCommand, gameUsers, ws);
         }
         catch (error) {
             console.error('Failed to decode command:', error);
@@ -24,13 +25,6 @@ wsServer.on('connection', (ws) => {
         removeClient(ws);
     });
 });
-// function sendMessageToOthers(msg: string, sender: WebSocket) {
-//   serverClients.forEach((player) => {
-//     if (player !== sender && player.readyState === WebSocket.OPEN) {
-//       player.send(`Message from other player: ${msg}`);
-//     }
-//   });
-// }
 function removeClient(ws) {
     const index = serverClients.indexOf(ws);
     if (index > -1) {
