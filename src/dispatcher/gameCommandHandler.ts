@@ -7,31 +7,57 @@ export const gameCommandHandler = <T>(
   gameUsers: Array<{ name: string; password: string }>,
   ws: WebSocket,
 ) => {
-  console.log('Data in gameCommandHandler', data);
+  //console.log('Data in gameCommandHandler', data);
   const commandAction = data.type;
 
   switch (commandAction) {
     case 'reg': {
-      const { name, password } = data.data as IRegisterUser;
+      const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+      const { name, password } = parsedData as IRegisterUser;
       const existingUser = gameUsers.find((user) => user.name === name);
 
       if (existingUser) {
-        ws.send(
-          JSON.stringify({
+        if (existingUser.password === password) {
+          console.log(`User ${name} authenticated successfully.`);
+          const response = {
             type: 'reg',
-            data: { name, error: true, errorText: 'User already exists' },
+            data: JSON.stringify({
+              name,
+              index: gameUsers.indexOf(existingUser),
+              error: false,
+              errorText: '',
+            }),
             id: 0,
-          }),
-        );
+          };
+          ws.send(JSON.stringify(response));
+        } else {
+          const errorResponse = {
+            type: 'reg',
+            data: JSON.stringify({
+              name,
+              error: true,
+              errorText: 'Incorrect password',
+            }),
+            id: 0,
+          };
+          console.log(`Failed authentication for ${name}: incorrect password.`);
+          ws.send(JSON.stringify(errorResponse));
+        }
       } else {
         gameUsers.push({ name, password });
-        ws.send(
-          JSON.stringify({
-            type: 'reg',
-            data: { name, index: gameUsers.length - 1, error: false, errorText: '' },
-            id: 0,
+        console.log(gameUsers);
+        const registrationResponse = {
+          type: 'reg',
+          data: JSON.stringify({
+            name,
+            index: gameUsers.length - 1,
+            error: false,
+            errorText: '',
           }),
-        );
+          id: 0,
+        };
+        console.log(`User ${name} registered successfully.`);
+        ws.send(JSON.stringify(registrationResponse));
       }
       break;
     }
