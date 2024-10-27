@@ -1,5 +1,5 @@
-export const gameCommandHandler = (data, gameUsers, ws) => {
-    //console.log('Data in gameCommandHandler', data);
+const userConnections = new Map();
+export const gameCommandHandler = (data, gameUsers, gameRooms, ws) => {
     const commandAction = data.type;
     switch (commandAction) {
         case 'reg': {
@@ -20,6 +20,7 @@ export const gameCommandHandler = (data, gameUsers, ws) => {
                         id: 0,
                     };
                     ws.send(JSON.stringify(response));
+                    userConnections.set(ws, name);
                 }
                 else {
                     const errorResponse = {
@@ -50,12 +51,33 @@ export const gameCommandHandler = (data, gameUsers, ws) => {
                 };
                 console.log(`User ${name} registered successfully.`);
                 ws.send(JSON.stringify(registrationResponse));
+                userConnections.set(ws, name);
             }
             break;
         }
-        case 'create_room':
-            console.log('Create new room');
+        case 'create_room': {
+            const userName = userConnections.get(ws);
+            if (userName) {
+                const user = gameUsers.find((user) => user.name === userName);
+                const newRoomId = gameRooms.length + 1;
+                gameRooms.push({ roomId: newRoomId, players: [ws] });
+                const userIndex = gameUsers.indexOf(user);
+                ws.send(JSON.stringify({
+                    type: 'create_room',
+                    data: JSON.stringify({ idGame: newRoomId, idPlayer: userIndex }),
+                    id: 0,
+                }));
+                console.log(`Room ${newRoomId} created by ${userName}`);
+            }
+            else {
+                ws.send(JSON.stringify({
+                    type: 'error',
+                    data: JSON.stringify({ error: true, errorText: 'User not authenticated' }),
+                    id: 0,
+                }));
+            }
             break;
+        }
         case 'add_user_to_room':
             console.log('Add user to existing room');
             break;

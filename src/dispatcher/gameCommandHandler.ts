@@ -2,12 +2,14 @@ import { WebSocket } from 'ws';
 
 import { IActionCommand, IRegisterUser } from '../types/types.js';
 
+const userConnections: Map<WebSocket, string> = new Map();
+
 export const gameCommandHandler = <T>(
   data: IActionCommand<T>,
   gameUsers: Array<{ name: string; password: string }>,
+  gameRooms: Array<{ roomId: number; players: WebSocket[] }>,
   ws: WebSocket,
 ) => {
-  //console.log('Data in gameCommandHandler', data);
   const commandAction = data.type;
 
   switch (commandAction) {
@@ -30,6 +32,7 @@ export const gameCommandHandler = <T>(
             id: 0,
           };
           ws.send(JSON.stringify(response));
+          userConnections.set(ws, name);
         } else {
           const errorResponse = {
             type: 'reg',
@@ -58,13 +61,39 @@ export const gameCommandHandler = <T>(
         };
         console.log(`User ${name} registered successfully.`);
         ws.send(JSON.stringify(registrationResponse));
+        userConnections.set(ws, name);
       }
       break;
     }
 
-    case 'create_room':
-      console.log('Create new room');
+    case 'create_room': {
+      const userName = userConnections.get(ws);
+
+      if (userName) {
+        const user = gameUsers.find((user) => user.name === userName);
+        const newRoomId = gameRooms.length + 1;
+        gameRooms.push({ roomId: newRoomId, players: [ws] });
+        const userIndex = gameUsers.indexOf(user!);
+
+        ws.send(
+          JSON.stringify({
+            type: 'create_room',
+            data: JSON.stringify({ idGame: newRoomId, idPlayer: userIndex }),
+            id: 0,
+          }),
+        );
+        console.log(`Room ${newRoomId} created by ${userName}`);
+      } else {
+        ws.send(
+          JSON.stringify({
+            type: 'error',
+            data: JSON.stringify({ error: true, errorText: 'User not authenticated' }),
+            id: 0,
+          }),
+        );
+      }
       break;
+    }
 
     case 'add_user_to_room':
       console.log('Add user to existing room');

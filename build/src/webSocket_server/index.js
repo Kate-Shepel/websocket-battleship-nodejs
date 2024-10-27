@@ -5,6 +5,8 @@ const WSSERVER_PORT = 3000;
 const wsServer = new WebSocketServer({ port: WSSERVER_PORT });
 const serverClients = [];
 const gameUsers = [];
+const gameRooms = [];
+//let roomIdCounter = 1;
 console.log(`Start WebSocket server on port ${WSSERVER_PORT}`);
 wsServer.on('connection', (ws) => {
     console.log('Client connected');
@@ -13,7 +15,7 @@ wsServer.on('connection', (ws) => {
         try {
             const decodedCommand = decodeCommand(command.toString());
             console.log(`Game Command: ${JSON.stringify(decodedCommand)}`);
-            gameCommandHandler(decodedCommand, gameUsers, ws);
+            gameCommandHandler(decodedCommand, gameUsers, gameRooms, ws);
         }
         catch (error) {
             console.error('Failed to decode command:', error);

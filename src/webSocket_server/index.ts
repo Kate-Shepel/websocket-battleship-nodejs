@@ -7,6 +7,8 @@ const WSSERVER_PORT = 3000;
 const wsServer = new WebSocketServer({ port: WSSERVER_PORT });
 const serverClients: WebSocket[] = [];
 const gameUsers: Array<{ name: string; password: string }> = [];
+const gameRooms: Array<{ roomId: number; players: WebSocket[] }> = [];
+//let roomIdCounter = 1;
 
 console.log(`Start WebSocket server on port ${WSSERVER_PORT}`);
 
@@ -19,7 +21,7 @@ wsServer.on('connection', (ws: WebSocket) => {
       const decodedCommand = decodeCommand(command.toString());
 
       console.log(`Game Command: ${JSON.stringify(decodedCommand)}`);
-      gameCommandHandler(decodedCommand, gameUsers, ws);
+      gameCommandHandler(decodedCommand, gameUsers, gameRooms, ws);
     } catch (error) {
       console.error('Failed to decode command:', error);
       ws.send(JSON.stringify({ type: 'error', message: 'Invalid command format' }));
