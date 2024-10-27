@@ -1,5 +1,5 @@
 import { handleRegistration, getUserName } from '../helpers/registrationHelper.js';
-import { handleCreateRoom } from '../helpers/roomHelper.js';
+import { handleAddUserToRoom, handleCreateRoom } from '../helpers/roomHelper.js';
 export const gameCommandHandler = (data, gameUsers, gameRooms, ws) => {
     const commandAction = data.type;
     switch (commandAction) {
@@ -22,9 +22,12 @@ export const gameCommandHandler = (data, gameUsers, gameRooms, ws) => {
             }
             break;
         }
-        case 'add_user_to_room':
-            console.log('Add user to existing room');
+        case 'add_user_to_room': {
+            const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+            const { indexRoom } = parsedData;
+            handleAddUserToRoom(gameRooms, gameUsers, ws, indexRoom);
             break;
+        }
         case 'attack':
             console.log('Player attacks');
             break;

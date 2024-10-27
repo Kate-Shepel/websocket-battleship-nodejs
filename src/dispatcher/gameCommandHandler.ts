@@ -2,7 +2,7 @@ import { WebSocket } from 'ws';
 
 import { IActionCommand, IRegisterUser } from '../types/types.js';
 import { handleRegistration, getUserName } from '../helpers/registrationHelper.js';
-import { handleCreateRoom } from '../helpers/roomHelper.js';
+import { handleAddUserToRoom, handleCreateRoom } from '../helpers/roomHelper.js';
 
 export const gameCommandHandler = <T>(
   data: IActionCommand<T>,
@@ -35,9 +35,12 @@ export const gameCommandHandler = <T>(
       break;
     }
 
-    case 'add_user_to_room':
-      console.log('Add user to existing room');
+    case 'add_user_to_room': {
+      const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+      const { indexRoom } = parsedData;
+      handleAddUserToRoom(gameRooms, gameUsers, ws, indexRoom);
       break;
+    }
 
     case 'attack':
       console.log('Player attacks');

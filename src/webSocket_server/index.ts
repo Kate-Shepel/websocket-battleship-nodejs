@@ -8,7 +8,6 @@ const wsServer = new WebSocketServer({ port: WSSERVER_PORT });
 const serverClients: WebSocket[] = [];
 const gameUsers: Array<{ name: string; password: string }> = [];
 const gameRooms: Array<{ roomId: number; players: WebSocket[] }> = [];
-//let roomIdCounter = 1;
 
 console.log(`Start WebSocket server on port ${WSSERVER_PORT}`);
 

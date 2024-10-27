@@ -6,7 +6,6 @@ const wsServer = new WebSocketServer({ port: WSSERVER_PORT });
 const serverClients = [];
 const gameUsers = [];
 const gameRooms = [];
-//let roomIdCounter = 1;
 console.log(`Start WebSocket server on port ${WSSERVER_PORT}`);
 wsServer.on('connection', (ws) => {
     console.log('Client connected');
