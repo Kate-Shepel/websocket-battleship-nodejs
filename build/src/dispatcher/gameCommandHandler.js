@@ -1,5 +1,6 @@
 import { handleRegistration, getUserName } from '../helpers/registrationHelper.js';
 import { handleAddUserToRoom, handleCreateRoom } from '../helpers/roomHelper.js';
+import { handleAddShips } from '../helpers/gameHelper.js';
 export const gameCommandHandler = (data, ws) => {
     const commandAction = data.type;
     switch (commandAction) {
@@ -26,6 +27,11 @@ export const gameCommandHandler = (data, ws) => {
             const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
             const { indexRoom } = parsedData;
             handleAddUserToRoom(ws, indexRoom);
+            break;
+        }
+        case 'add_ships': {
+            const shipsData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+            handleAddShips(ws, shipsData);
             break;
         }
         case 'attack':

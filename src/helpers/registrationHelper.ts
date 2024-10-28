@@ -24,6 +24,7 @@ export function handleRegistration(data: IRegisterUser, ws: WebSocket) {
         }),
       );
       userConnections.set(ws, name);
+      console.log(state.gameUsers); /////////////////////////////////
     } else {
       console.log(`Failed authentication for ${name}: incorrect password.`);
       ws.send(
@@ -41,6 +42,7 @@ export function handleRegistration(data: IRegisterUser, ws: WebSocket) {
   } else {
     state.gameUsers.push({ name, password });
     console.log(`User ${name} registered successfully.`);
+    console.log(state.gameUsers); //////////////////////////////////
     ws.send(
       JSON.stringify({
         type: 'reg',

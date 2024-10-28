@@ -2,6 +2,7 @@ import { WebSocket } from 'ws';
 import { IActionCommand, IRegisterUser } from '../types/types.js';
 import { handleRegistration, getUserName } from '../helpers/registrationHelper.js';
 import { handleAddUserToRoom, handleCreateRoom } from '../helpers/roomHelper.js';
+import { handleAddShips } from '../helpers/gameHelper.js';
 
 export const gameCommandHandler = <T>(data: IActionCommand<T>, ws: WebSocket) => {
   const commandAction = data.type;
@@ -33,6 +34,12 @@ export const gameCommandHandler = <T>(data: IActionCommand<T>, ws: WebSocket) =>
       const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
       const { indexRoom } = parsedData;
       handleAddUserToRoom(ws, indexRoom);
+      break;
+    }
+
+    case 'add_ships': {
+      const shipsData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+      handleAddShips(ws, shipsData);
       break;
     }
 
