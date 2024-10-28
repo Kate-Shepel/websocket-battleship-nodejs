@@ -31,15 +31,6 @@ wsServer.on('connection', (ws: WebSocket) => {
   });
 });
 
-function gracefulShutdown() {
-  wsServer.close(() => {
-    console.log('WebSocket server closed');
-  });
-}
-
-process.on('SIGINT', gracefulShutdown);
-process.on('SIGTERM', gracefulShutdown);
-
 function removeClient(ws: WebSocket) {
   const index = state.serverClients.indexOf(ws);
 
