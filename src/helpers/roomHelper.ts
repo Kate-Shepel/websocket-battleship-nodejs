@@ -18,6 +18,8 @@ export function handleCreateRoom(ws: WebSocket, userName: string) {
       }),
     );
     console.log(`Room ${newRoomId} created by ${userName}`);
+
+    broadcastRoomStateUpdate();
   } else {
     ws.send(
       JSON.stringify({
@@ -70,4 +72,25 @@ export function handleAddUserToRoom(ws: WebSocket, indexRoom: number) {
       }),
     );
   });
+
+  broadcastRoomStateUpdate();
+}
+
+function broadcastRoomStateUpdate() {
+  const roomState = {
+    type: 'update_room',
+    data: JSON.stringify(
+      state.gameRooms.map((room) => ({
+        roomId: room.roomId,
+        roomUsers: room.players.map((ws) => {
+          const userName = getUserName(ws);
+          const userIndex = state.gameUsers.findIndex((user) => user.name === userName);
+          return { name: userName, index: userIndex };
+        }),
+      })),
+    ),
+    id: 0,
+  };
+
+  state.serverClients.forEach((client) => client.send(JSON.stringify(roomState)));
 }
