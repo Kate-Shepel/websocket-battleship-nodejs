@@ -24,6 +24,13 @@ wsServer.on('connection', (ws) => {
         removeClient(ws);
     });
 });
+function gracefulShutdown() {
+    wsServer.close(() => {
+        console.log('WebSocket server closed');
+    });
+}
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 function removeClient(ws) {
     const index = state.serverClients.indexOf(ws);
     if (index > -1) {

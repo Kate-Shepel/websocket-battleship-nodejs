@@ -1,6 +1,7 @@
 import { WebSocket } from 'ws';
 import { IRegisterUser } from '../types/types.js';
 import { state } from '../state/state.js';
+import { broadcastRoomStateUpdate } from './roomHelper.js';
 
 const userConnections: Map<WebSocket, string> = new Map();
 
@@ -24,7 +25,9 @@ export function handleRegistration(data: IRegisterUser, ws: WebSocket) {
         }),
       );
       userConnections.set(ws, name);
-      console.log(state.gameUsers); /////////////////////////////////
+      console.log(state.gameUsers);
+
+      broadcastRoomStateUpdate();
     } else {
       console.log(`Failed authentication for ${name}: incorrect password.`);
       ws.send(
@@ -42,7 +45,7 @@ export function handleRegistration(data: IRegisterUser, ws: WebSocket) {
   } else {
     state.gameUsers.push({ name, password });
     console.log(`User ${name} registered successfully.`);
-    console.log(state.gameUsers); //////////////////////////////////
+    console.log(state.gameUsers);
     ws.send(
       JSON.stringify({
         type: 'reg',
@@ -56,6 +59,8 @@ export function handleRegistration(data: IRegisterUser, ws: WebSocket) {
       }),
     );
     userConnections.set(ws, name);
+
+    broadcastRoomStateUpdate();
   }
 }
 

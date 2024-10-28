@@ -76,7 +76,7 @@ export function handleAddUserToRoom(ws: WebSocket, indexRoom: number) {
   broadcastRoomStateUpdate();
 }
 
-function broadcastRoomStateUpdate() {
+export function broadcastRoomStateUpdate() {
   const roomState = {
     type: 'update_room',
     data: JSON.stringify(

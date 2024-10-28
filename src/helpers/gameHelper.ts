@@ -2,6 +2,7 @@ import { WebSocket } from 'ws';
 import { state } from '../state/state.js';
 import { getUserName } from './registrationHelper.js';
 import { IShipData, IGameSession } from '../types/types.js';
+import { broadcastRoomStateUpdate } from './roomHelper.js';
 
 export function handleAddShips(ws: WebSocket, shipData: IShipData) {
   const userName = getUserName(ws);
@@ -35,6 +36,8 @@ export function handleAddShips(ws: WebSocket, shipData: IShipData) {
   const game: IGameSession = state.gameSessions[room.roomId] || { players: {} };
   game.players[userName] = { ships: shipData.ships, ready: true };
   state.gameSessions[room.roomId] = game;
+  console.log(`${userName} has added the ships to the game board`);
+  broadcastRoomStateUpdate();
 
   if (Object.keys(game.players).length === 2 && Object.values(game.players).every((p) => p.ready)) {
     room.players.forEach((playerWs) => {
