@@ -2,25 +2,23 @@ import { WebSocketServer, WebSocket } from 'ws';
 
 import { gameCommandHandler } from '../dispatcher/gameCommandHandler.js';
 import { decodeCommand } from '../utils/commandHandler.js';
+import { state } from '../state/state.js';
 
 const WSSERVER_PORT = 3000;
 const wsServer = new WebSocketServer({ port: WSSERVER_PORT });
-const serverClients: WebSocket[] = [];
-const gameUsers: Array<{ name: string; password: string }> = [];
-const gameRooms: Array<{ roomId: number; players: WebSocket[] }> = [];
 
 console.log(`Start WebSocket server on port ${WSSERVER_PORT}`);
 
 wsServer.on('connection', (ws: WebSocket) => {
   console.log('Client connected');
-  serverClients.push(ws);
+  state.serverClients.push(ws);
 
   ws.on('message', (command) => {
     try {
       const decodedCommand = decodeCommand(command.toString());
 
       console.log(`Game Command: ${JSON.stringify(decodedCommand)}`);
-      gameCommandHandler(decodedCommand, gameUsers, gameRooms, ws);
+      gameCommandHandler(decodedCommand, ws);
     } catch (error) {
       console.error('Failed to decode command:', error);
       ws.send(JSON.stringify({ type: 'error', message: 'Invalid command format' }));
@@ -34,9 +32,9 @@ wsServer.on('connection', (ws: WebSocket) => {
 });
 
 function removeClient(ws: WebSocket) {
-  const index = serverClients.indexOf(ws);
+  const index = state.serverClients.indexOf(ws);
 
   if (index > -1) {
-    serverClients.splice(index, 1);
+    state.serverClients.splice(index, 1);
   }
 }

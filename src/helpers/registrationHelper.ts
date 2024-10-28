@@ -1,16 +1,12 @@
 import { WebSocket } from 'ws';
-
 import { IRegisterUser } from '../types/types.js';
+import { state } from '../state/state.js';
 
 const userConnections: Map<WebSocket, string> = new Map();
 
-export function handleRegistration(
-  data: IRegisterUser,
-  gameUsers: Array<{ name: string; password: string }>,
-  ws: WebSocket,
-) {
+export function handleRegistration(data: IRegisterUser, ws: WebSocket) {
   const { name, password } = data;
-  const existingUser = gameUsers.find((user) => user.name === name);
+  const existingUser = state.gameUsers.find((user) => user.name === name);
 
   if (existingUser) {
     if (existingUser.password === password) {
@@ -20,7 +16,7 @@ export function handleRegistration(
           type: 'reg',
           data: JSON.stringify({
             name,
-            index: gameUsers.indexOf(existingUser),
+            index: state.gameUsers.indexOf(existingUser),
             error: false,
             errorText: '',
           }),
@@ -43,14 +39,14 @@ export function handleRegistration(
       );
     }
   } else {
-    gameUsers.push({ name, password });
+    state.gameUsers.push({ name, password });
     console.log(`User ${name} registered successfully.`);
     ws.send(
       JSON.stringify({
         type: 'reg',
         data: JSON.stringify({
           name,
-          index: gameUsers.length - 1,
+          index: state.gameUsers.length - 1,
           error: false,
           errorText: '',
         }),

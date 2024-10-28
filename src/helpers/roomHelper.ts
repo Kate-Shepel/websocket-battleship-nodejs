@@ -1,19 +1,14 @@
 import { WebSocket } from 'ws';
-
 import { getUserName } from './registrationHelper.js';
+import { state } from '../state/state.js';
 
-export function handleCreateRoom(
-  gameRooms: Array<{ roomId: number; players: WebSocket[] }>,
-  gameUsers: Array<{ name: string; password: string }>,
-  ws: WebSocket,
-  userName: string,
-) {
-  const user = gameUsers.find((user) => user.name === userName);
+export function handleCreateRoom(ws: WebSocket, userName: string) {
+  const user = state.gameUsers.find((user) => user.name === userName);
   if (user) {
-    const newRoomId = gameRooms.length + 1;
-    gameRooms.push({ roomId: newRoomId, players: [ws] });
+    const newRoomId = state.gameRooms.length + 1;
+    state.gameRooms.push({ roomId: newRoomId, players: [ws] });
 
-    const userIndex = gameUsers.indexOf(user);
+    const userIndex = state.gameUsers.indexOf(user);
 
     ws.send(
       JSON.stringify({
@@ -34,13 +29,8 @@ export function handleCreateRoom(
   }
 }
 
-export function handleAddUserToRoom(
-  gameRooms: Array<{ roomId: number; players: WebSocket[] }>,
-  gameUsers: Array<{ name: string; password: string }>,
-  ws: WebSocket,
-  indexRoom: number,
-) {
-  const room = gameRooms.find((room) => room.roomId === indexRoom);
+export function handleAddUserToRoom(ws: WebSocket, indexRoom: number) {
+  const room = state.gameRooms.find((room) => room.roomId === indexRoom);
   const userName = getUserName(ws);
 
   if (!room) {
@@ -68,9 +58,9 @@ export function handleAddUserToRoom(
   room.players.push(ws);
   console.log(`User ${userName} added to room ${indexRoom}`);
 
-  room.players.forEach((playerWs, index) => {
-    const user = gameUsers.find((user) => getUserName(playerWs) === user.name);
-    const userIndex = gameUsers.indexOf(user!);
+  room.players.forEach((playerWs) => {
+    const user = state.gameUsers.find((user) => getUserName(playerWs) === user.name);
+    const userIndex = state.gameUsers.indexOf(user!);
 
     playerWs.send(
       JSON.stringify({

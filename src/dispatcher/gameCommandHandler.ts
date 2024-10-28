@@ -1,28 +1,22 @@
 import { WebSocket } from 'ws';
-
 import { IActionCommand, IRegisterUser } from '../types/types.js';
 import { handleRegistration, getUserName } from '../helpers/registrationHelper.js';
 import { handleAddUserToRoom, handleCreateRoom } from '../helpers/roomHelper.js';
 
-export const gameCommandHandler = <T>(
-  data: IActionCommand<T>,
-  gameUsers: Array<{ name: string; password: string }>,
-  gameRooms: Array<{ roomId: number; players: WebSocket[] }>,
-  ws: WebSocket,
-) => {
+export const gameCommandHandler = <T>(data: IActionCommand<T>, ws: WebSocket) => {
   const commandAction = data.type;
 
   switch (commandAction) {
     case 'reg': {
       const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
-      handleRegistration(parsedData as IRegisterUser, gameUsers, ws);
+      handleRegistration(parsedData as IRegisterUser, ws);
       break;
     }
 
     case 'create_room': {
       const userName = getUserName(ws);
       if (userName) {
-        handleCreateRoom(gameRooms, gameUsers, ws, userName);
+        handleCreateRoom(ws, userName);
       } else {
         ws.send(
           JSON.stringify({
@@ -38,7 +32,7 @@ export const gameCommandHandler = <T>(
     case 'add_user_to_room': {
       const parsedData = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
       const { indexRoom } = parsedData;
-      handleAddUserToRoom(gameRooms, gameUsers, ws, indexRoom);
+      handleAddUserToRoom(ws, indexRoom);
       break;
     }
 
